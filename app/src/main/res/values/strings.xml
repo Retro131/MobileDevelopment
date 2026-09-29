@@ -1,3 +1,7 @@
 <resources>
     <string name="app_name">MobileDevelopment</string>
+    <string name="tab_player">Игрок</string>
+    <string name="tab_rules">Правила</string>
+    <string name="tab_authors">Авторы</string>
+    <string name="author_1_name">Фамилия Имя</string>
 </resources>

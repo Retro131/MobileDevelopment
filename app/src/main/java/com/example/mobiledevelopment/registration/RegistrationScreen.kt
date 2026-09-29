@@ -19,7 +19,6 @@ fun RegistrationScreen(config: RegistrationConfig) {
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .safeDrawingPadding()
             .imePadding()
             .verticalScroll(rememberScrollState())
             .padding(16.dp),
