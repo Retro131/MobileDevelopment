@@ -9,19 +9,28 @@ import androidx.compose.runtime.saveable.rememberSaveableStateHolder
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import com.example.mobiledevelopment.authors.AuthorsScreen
-import com.example.mobiledevelopment.rules.RulesScreen
+import com.example.mobiledevelopment.model.GameSettings
 import com.example.mobiledevelopment.registration.RegistrationConfig
 import com.example.mobiledevelopment.registration.RegistrationScreen
-
+import com.example.mobiledevelopment.rules.RulesScreen
+import com.example.mobiledevelopment.settings.GameSettingsScreen
+import androidx.compose.material3.Icon
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 private enum class GameTab(val titleRes: Int) {
     PLAYER(R.string.tab_player),
     RULES(R.string.tab_rules),
-    AUTHORS(R.string.tab_authors)
+    AUTHORS(R.string.tab_authors),
+    SETTINGS(R.string.tab_settings)
 }
 @Composable
 fun GameScreen() {
     var selectedTab by rememberSaveable {
         mutableStateOf(GameTab.PLAYER)
+    }
+    var settings by rememberSaveable {
+        mutableStateOf(GameSettings())
     }
     val stateHolder = rememberSaveableStateHolder()
     val config = remember { RegistrationConfig() }
@@ -35,8 +44,22 @@ fun GameScreen() {
                 Tab(
                     selected = selectedTab == tab,
                     onClick = { selectedTab = tab },
-                    text = { Text(stringResource(tab.titleRes)) }
-                )
+                    modifier = Modifier.height(48.dp)
+                ) {
+                    if (tab == GameTab.SETTINGS) {
+                        Icon(
+                            painter = painterResource(R.drawable.ic_settings),
+                            contentDescription = stringResource(tab.titleRes),
+                            modifier = Modifier.size(24.dp)
+                        )
+                    } else {
+                        Text(
+                            text = stringResource(tab.titleRes),
+                            fontSize = 13.sp,
+                            maxLines = 1
+                        )
+                    }
+                }
             }
         }
         Box(
@@ -49,6 +72,10 @@ fun GameScreen() {
                     GameTab.PLAYER -> RegistrationScreen(config)
                     GameTab.RULES -> RulesScreen()
                     GameTab.AUTHORS -> AuthorsScreen()
+                    GameTab.SETTINGS -> GameSettingsScreen(
+                        settings = settings,
+                        onSettingsChange = { settings = it }
+                    )
                 }
             }
         }

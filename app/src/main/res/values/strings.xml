@@ -3,5 +3,17 @@
     <string name="tab_player">Игрок</string>
     <string name="tab_rules">Правила</string>
     <string name="tab_authors">Авторы</string>
-    <string name="author_1_name">Фамилия Имя</string>
+    <string name="author_1_name">Петух 1</string>
+    <string name="author_2_name">Петух 2</string>
+
+    <string name="tab_settings">Настройки</string>
+    <string name="settings_title">Настройки игры</string>
+    <string name="settings_speed">Скорость игры</string>
+    <string name="settings_max_cockroaches">Максимальное количество тараканов</string>
+    <string name="settings_bonus_interval">Интервал появления бонусов</string>
+    <string name="settings_round_duration">Длительность раунда</string>
+    <string name="settings_reset">Сбросить настройки</string>
+    <string name="settings_multiplier">×%1$d</string>
+    <string name="settings_seconds">%1$d с</string>
+    <string name="settings_count">%1$d шт.</string>
 </resources>

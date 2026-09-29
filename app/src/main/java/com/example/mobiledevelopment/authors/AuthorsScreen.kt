@@ -26,6 +26,10 @@ private val authors = listOf(
     Author(
         nameRes = R.string.author_1_name,
         photoRes = R.drawable.author
+    ),
+    Author(
+        nameRes = R.string.author_2_name,
+        photoRes = R.drawable.author
     )
 )
 @Composable
