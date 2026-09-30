@@ -3,8 +3,8 @@
     <string name="tab_player">Игрок</string>
     <string name="tab_rules">Правила</string>
     <string name="tab_authors">Авторы</string>
-    <string name="author_1_name">Петух 1</string>
-    <string name="author_2_name">Петух 2</string>
+    <string name="author_1_name">Фамилия Имя</string>
+    <string name="author_2_name">Петушок 2</string>
 
     <string name="tab_settings">Настройки</string>
     <string name="settings_title">Настройки игры</string>

@@ -1,5 +1,8 @@
 package com.example.mobiledevelopment
+
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.pager.HorizontalPager
+import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.material3.PrimaryTabRow
 import androidx.compose.material3.Tab
 import androidx.compose.material3.Text
@@ -18,12 +21,15 @@ import androidx.compose.material3.Icon
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import kotlinx.coroutines.launch
+
 private enum class GameTab(val titleRes: Int) {
     PLAYER(R.string.tab_player),
     RULES(R.string.tab_rules),
     AUTHORS(R.string.tab_authors),
     SETTINGS(R.string.tab_settings)
 }
+
 @Composable
 fun GameScreen() {
     var selectedTab by rememberSaveable {
@@ -32,6 +38,8 @@ fun GameScreen() {
     var settings by rememberSaveable {
         mutableStateOf(GameSettings())
     }
+    val pagerState = rememberPagerState(pageCount = { GameTab.entries.size })
+    val coroutineScope = rememberCoroutineScope()
     val stateHolder = rememberSaveableStateHolder()
     val config = remember { RegistrationConfig() }
     Column(
@@ -39,11 +47,11 @@ fun GameScreen() {
             .fillMaxSize()
             .safeDrawingPadding()
     ) {
-        PrimaryTabRow(selectedTabIndex = selectedTab.ordinal) {
-            GameTab.entries.forEach { tab ->
+        PrimaryTabRow(selectedTabIndex = pagerState.currentPage) {
+            GameTab.entries.forEachIndexed { index, tab ->
                 Tab(
-                    selected = selectedTab == tab,
-                    onClick = { selectedTab = tab },
+                    selected = pagerState.currentPage == index,
+                    onClick = { coroutineScope.launch { pagerState.animateScrollToPage(index) } },
                     modifier = Modifier.height(48.dp)
                 ) {
                     if (tab == GameTab.SETTINGS) {
@@ -62,13 +70,15 @@ fun GameScreen() {
                 }
             }
         }
-        Box(
-            modifier = Modifier
-                .weight(1f)
-                .fillMaxWidth()
-        ) {
-            stateHolder.SaveableStateProvider(selectedTab.name) {
-                when (selectedTab) {
+        HorizontalPager(
+            state = pagerState,
+            key = { index -> GameTab.entries[index].name },
+            modifier = Modifier.weight(1f)
+        )
+        { page ->
+            val tab = GameTab.entries[page]
+            stateHolder.SaveableStateProvider(tab.name) {
+                when (tab) {
                     GameTab.PLAYER -> RegistrationScreen(config)
                     GameTab.RULES -> RulesScreen()
                     GameTab.AUTHORS -> AuthorsScreen()
