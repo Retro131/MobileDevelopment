@@ -102,6 +102,7 @@ fun BugGameScreen() {
                         } else {
                             score -= MISS_PENALTY
                         }
+                        println("Нажатие ${touch.x} ${touch.y}")
                     }
                 }
         ) { }
