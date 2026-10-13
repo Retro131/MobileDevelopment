@@ -1,12 +1,18 @@
 package com.example.mobiledevelopment.game
 
-data class Bug(
-    val id: Int,
-    val x: Float,
-    val y: Float,
-    val size: Float,
-    val points: Int
-) {
+import androidx.annotation.DrawableRes
+
+abstract class Bug {
+    abstract val id: Int
+    abstract val x: Float
+    abstract val y: Float
+
+    abstract val size: Float
+    abstract val points: Int
+
+    @get:DrawableRes
+    abstract val imageRes: Int
+
     val radius: Float
         get() = size / 2f
 
