@@ -7,10 +7,12 @@ data class Bug(
     val size: Float,
     val points: Int
 ) {
+    val radius: Float
+        get() = size / 2f
+
     fun contains(touchX: Float, touchY: Float): Boolean {
         val dx = touchX - x
         val dy = touchY - y
-        val radius = size / 2f
 
         return dx * dx + dy * dy <= radius * radius
     }
