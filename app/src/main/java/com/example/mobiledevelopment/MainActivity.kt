@@ -14,8 +14,7 @@ class MainActivity : ComponentActivity() {
         setContent {
             MobileDevelopmentTheme {
                 Surface(modifier = Modifier.fillMaxSize()) {
-//                    GameScreen()
-                    BugGameScreen()
+                    GameScreen()
                 }
             }
         }

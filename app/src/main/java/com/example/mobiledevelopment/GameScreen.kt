@@ -3,6 +3,7 @@ package com.example.mobiledevelopment
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
+import androidx.compose.material3.Button
 import androidx.compose.material3.PrimaryTabRow
 import androidx.compose.material3.Tab
 import androidx.compose.material3.Text
@@ -21,6 +22,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.mobiledevelopment.game.BugGameScreen
 import kotlinx.coroutines.launch
 
 private enum class GameTab(val titleRes: Int) {
@@ -38,15 +40,33 @@ fun GameScreen() {
     var settings by rememberSaveable {
         mutableStateOf(GameSettings())
     }
+    var showGame by rememberSaveable {
+        mutableStateOf(false)
+    }
     val pagerState = rememberPagerState(pageCount = { GameTab.entries.size })
     val coroutineScope = rememberCoroutineScope()
     val stateHolder = rememberSaveableStateHolder()
     val config = remember { RegistrationConfig() }
+    if (showGame) {
+        BugGameScreen(
+            settings = settings,
+            onExit = { showGame = false }
+        )
+        return
+    }
     Column(
         modifier = Modifier
             .fillMaxSize()
             .safeDrawingPadding()
     ) {
+        Button(
+            onClick = { showGame = true },
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp, vertical = 8.dp)
+        ) {
+            Text("Играть")
+        }
         PrimaryTabRow(selectedTabIndex = pagerState.currentPage) {
             GameTab.entries.forEachIndexed { index, tab ->
                 Tab(
