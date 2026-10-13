@@ -20,7 +20,7 @@ data class RareBug(
 
     override val size: Float = 130f
     override val points: Int = 50
-    override val imageRes: Int = R.drawable.bug
+    override val imageRes: Int = R.drawable.bug_rare
 
     protected override fun copyMotion(
         x: Float,

@@ -20,7 +20,7 @@ data class FastBug(
 
     override val size: Float = 110f
     override val points: Int = 20
-    override val imageRes: Int = R.drawable.bug
+    override val imageRes: Int = R.drawable.bug_fast
 
     protected override fun copyMotion(
         x: Float,

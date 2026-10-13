@@ -100,7 +100,12 @@ private fun BugRound(
 
     val durationMillis = settings.roundDuration * 1000L
 
-    val bugPainter = painterResource(R.drawable.bug)
+    val bugPainters = bugs
+        .map { it.imageRes }
+        .distinct()
+        .associateWith { imageRes ->
+            painterResource(imageRes)
+        }
 
     fun createBug(
         fieldWidth: Float,
@@ -281,27 +286,19 @@ private fun BugRound(
             drawRect(color = Color(0xFFE8F5E9))
 
             bugs.forEach { bug ->
+                val painter = bugPainters.getValue(bug.imageRes)
+
                 val imageSize = bug.size * scale
                 val left = (bug.x - bug.radius) * scale
                 val top = (bug.y - bug.radius) * scale
 
-                val colorFilter = when (bug) {
-                    is FastBug -> ColorFilter.tint(
-                        Color(0xFF1565C0)
-                    )
-
-                    is RareBug -> ColorFilter.tint(
-                        Color(0xFFFFA000)
-                    )
-
-                    else -> null
-                }
-
                 translate(left = left, top = top) {
-                    with(bugPainter) {
+                    with(painter) {
                         draw(
-                            size = Size(imageSize, imageSize),
-                            colorFilter = colorFilter
+                            size = Size(
+                                width = imageSize,
+                                height = imageSize
+                            )
                         )
                     }
                 }
