@@ -18,6 +18,9 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.unit.dp
 
@@ -105,7 +108,30 @@ fun BugGameScreen() {
                         println("Нажатие ${touch.x} ${touch.y}")
                     }
                 }
-        ) { }
+        ) {
+            val scale = minOf(size.width, size.height) / FIELD_SIZE
+
+            val left = (size.width - FIELD_SIZE * scale) / 2f
+            val top = (size.height - FIELD_SIZE * scale) / 2f
+
+            drawRect(
+                color = Color(0xFFE8F5E9),
+                topLeft = Offset(left, top),
+                size = Size(
+                    width = FIELD_SIZE * scale,
+                    height = FIELD_SIZE * scale
+                )
+            )
+
+            bugs.forEach { bug ->
+                val center = Offset(
+                    x = left + bug.x * scale,
+                    y = top + bug.y * scale
+                )
+
+            }
+
+        }
     }
 
 
