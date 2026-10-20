@@ -13,3 +13,17 @@
 .externalNativeBuild
 .cxx
 local.properties
+# Локальные настройки Android Studio
+.idea/compiler.xml
+.idea/deploymentTargetSelector.xml
+.idea/deviceManager.xml
+.idea/inspectionProfiles/Project_Default.xml
+
+# Временные файлы и результаты сборки
+.gradle/
+.kotlin/
+**/build/
+local.properties
+.idea/compiler.xml
+.idea/deploymentTargetSelector.xml
+.idea/deviceManager.xml
