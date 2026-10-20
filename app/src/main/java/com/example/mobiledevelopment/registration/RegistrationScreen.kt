@@ -7,10 +7,11 @@ import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import com.example.mobiledevelopment.model.GameSettings
 import com.example.mobiledevelopment.model.Player
 
 @Composable
-fun RegistrationScreen(config: RegistrationConfig) {
+fun RegistrationScreen(config: RegistrationConfig, settings: GameSettings) {
     var form by rememberSaveable {
         mutableStateOf(RegistrationState.initial(config))
     }
@@ -48,11 +49,6 @@ fun RegistrationScreen(config: RegistrationConfig) {
             courses = config.courses,
             onChange = { form = form.copy(course = it) }
         )
-        DifficultyPicker(
-            value = form.difficulty,
-            range = config.difficulties,
-            onChange = { form = form.copy(difficulty = it) }
-        )
         BirthDatePicker(
             value = form.birthDate,
             minDate = config.earliestBirthDate,
@@ -61,7 +57,7 @@ fun RegistrationScreen(config: RegistrationConfig) {
         Button(
             onClick = {
                 submitted = true
-                player = if (form.isValid) form.toPlayer() else null
+                player = if (form.isValid) form.toPlayer(settings.difficulty) else null
             },
             modifier = Modifier.fillMaxWidth()
         ) {

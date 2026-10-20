@@ -99,7 +99,7 @@ fun GameScreen() {
             val tab = GameTab.entries[page]
             stateHolder.SaveableStateProvider(tab.name) {
                 when (tab) {
-                    GameTab.PLAYER -> RegistrationScreen(config)
+                    GameTab.PLAYER -> RegistrationScreen(config, settings)
                     GameTab.RULES -> RulesScreen()
                     GameTab.AUTHORS -> AuthorsScreen()
                     GameTab.SETTINGS -> GameSettingsScreen(

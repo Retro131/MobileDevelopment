@@ -1,4 +1,5 @@
 package com.example.mobiledevelopment.settings
+
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
@@ -10,15 +11,26 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.example.mobiledevelopment.R
+import com.example.mobiledevelopment.model.Difficulty
 import com.example.mobiledevelopment.model.GameSettings
 import com.example.mobiledevelopment.model.GameSettingsLimits
 import kotlin.math.roundToInt
+
 private val bonusPresets = listOf(5, 10, 15, 30, 60)
+
 @Composable
 fun GameSettingsScreen(
     settings: GameSettings,
     onSettingsChange: (GameSettings) -> Unit
 ) {
+    fun updateManually(updated: GameSettings) {
+        if (updated != settings) {
+            onSettingsChange(
+                updated.copy(difficulty = Difficulty.Custom)
+            )
+        }
+    }
+
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -30,35 +42,62 @@ fun GameSettingsScreen(
             text = stringResource(R.string.settings_title),
             style = MaterialTheme.typography.headlineMedium
         )
+
+        SettingsCard(stringResource(R.string.settings_difficulty)) {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .horizontalScroll(rememberScrollState()),
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                Difficulty.entries.forEach { difficulty ->
+                    FilterChip(
+                        selected = settings.difficulty == difficulty,
+                        onClick = {
+                            onSettingsChange(
+                                settings.withDifficulty(difficulty)
+                            )
+                        },
+                        label = {
+                            Text(difficulty.name)
+                        }
+                    )
+                }
+            }
+        }
+
         SettingsCard(stringResource(R.string.settings_speed)) {
             SpeedPicker(
                 value = settings.speed,
                 onChange = {
-                    onSettingsChange(settings.copy(speed = it))
+                    updateManually(settings.copy(speed = it))
                 }
             )
         }
+
         SettingsCard(stringResource(R.string.settings_max_cockroaches)) {
             CockroachCounter(
                 value = settings.maxCockroaches,
                 onChange = {
-                    onSettingsChange(settings.copy(maxCockroaches = it))
+                    updateManually(settings.copy(maxCockroaches = it))
                 }
             )
         }
+
         SettingsCard(stringResource(R.string.settings_bonus_interval)) {
             BonusIntervalPicker(
                 value = settings.bonusInterval,
                 onChange = {
-                    onSettingsChange(settings.copy(bonusInterval = it))
+                    updateManually(settings.copy(bonusInterval = it))
                 }
             )
         }
+
         SettingsCard(stringResource(R.string.settings_round_duration)) {
             RoundDurationPicker(
                 value = settings.roundDuration,
                 onChange = {
-                    onSettingsChange(settings.copy(roundDuration = it))
+                    updateManually(settings.copy(roundDuration = it))
                 }
             )
         }
@@ -70,6 +109,7 @@ fun GameSettingsScreen(
         }
     }
 }
+
 @Composable
 private fun SettingsCard(
     title: String,
@@ -88,6 +128,7 @@ private fun SettingsCard(
         }
     }
 }
+
 @Composable
 private fun SpeedPicker(
     value: Int,
@@ -136,6 +177,7 @@ private fun SpeedPicker(
         }
     }
 }
+
 @Composable
 private fun CockroachCounter(
     value: Int,
@@ -170,6 +212,7 @@ private fun CockroachCounter(
         }
     }
 }
+
 @Composable
 private fun BonusIntervalPicker(
     value: Int,
@@ -196,6 +239,7 @@ private fun BonusIntervalPicker(
         }
     }
 }
+
 @Composable
 private fun RoundDurationPicker(
     value: Int,

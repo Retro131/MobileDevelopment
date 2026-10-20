@@ -11,7 +11,7 @@ data class Player(
     val fullName: String,
     val gender: Gender,
     val course: Int,
-    val difficulty: Int,
+    val difficulty: Difficulty,
     val birthDate: LocalDate) : Serializable {
     val zodiac: Zodiac
         get() = Zodiac.fromDate(birthDate)

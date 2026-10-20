@@ -1,5 +1,6 @@
 package com.example.mobiledevelopment.game
 
+import GameLayout
 import android.os.SystemClock
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.Canvas
@@ -201,108 +202,106 @@ private fun BugRound(
         return
     }
 
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .safeDrawingPadding()
-            .padding(16.dp),
-        verticalArrangement = Arrangement.spacedBy(12.dp)
-    ) {
-        Text(
-            text = "Очки: $score",
-            style = MaterialTheme.typography.headlineMedium
-        )
+    GameLayout(
+        controls = {
+            Text(
+                text = "Очки: $score",
+                style = MaterialTheme.typography.headlineMedium
+            )
 
-        Text(
-            text = "Осталось: $remainingSeconds с",
-            style = MaterialTheme.typography.titleLarge
-        )
+            Text(
+                text = "Осталось: $remainingSeconds с",
+                style = MaterialTheme.typography.titleLarge
+            )
 
-        Text(text = "Попадания: $hits   Промахи: $misses")
-        Text(text = "Жуков на поле: ${bugs.size}")
+            Text(text = "Попадания: $hits   Промахи: $misses")
+            Text(text = "Жуков на поле: ${bugs.size}")
 
-        OutlinedButton(onClick = onExit) {
-            Text("В меню")
-        }
+            OutlinedButton(onClick = onExit) {
+                Text("В меню")
+            }
+        },
+        field = { fieldModifier ->
+            Canvas(
+                modifier = fieldModifier
+                    .onSizeChanged { newSize ->
+                        canvasSize = newSize
+                    }
+                    .onSizeChanged { canvasSize = it }
+                    .pointerInput(Unit) {
+                        detectTapGestures { touch ->
+                            if (!updateTimer()) {
+                                return@detectTapGestures
+                            }
 
-        Canvas(
-            modifier = Modifier
-                .fillMaxWidth()
-                .weight(1f)
-                .onSizeChanged { canvasSize = it }
-                .pointerInput(Unit) {
-                    detectTapGestures { touch ->
-                        if (!updateTimer()) {
-                            return@detectTapGestures
-                        }
+                            val scale = minOf(
+                                size.width,
+                                size.height
+                            ).toFloat() / FIELD_SIZE
 
-                        val scale = minOf(
-                            size.width,
-                            size.height
-                        ).toFloat() / FIELD_SIZE
+                            if (scale <= 0f) {
+                                return@detectTapGestures
+                            }
 
-                        if (scale <= 0f) {
-                            return@detectTapGestures
-                        }
+                            val fieldWidth = size.width / scale
+                            val fieldHeight = size.height / scale
 
-                        val fieldWidth = size.width / scale
-                        val fieldHeight = size.height / scale
+                            val modelX = touch.x / scale
+                            val modelY = touch.y / scale
 
-                        val modelX = touch.x / scale
-                        val modelY = touch.y / scale
+                            if (
+                                modelX !in 0f..fieldWidth ||
+                                modelY !in 0f..fieldHeight
+                            ) {
+                                return@detectTapGestures
+                            }
 
-                        if (
-                            modelX !in 0f..fieldWidth ||
-                            modelY !in 0f..fieldHeight
-                        ) {
-                            return@detectTapGestures
-                        }
+                            val hitBug = bugs.lastOrNull { bug ->
+                                bug.contains(modelX, modelY)
+                            }
 
-                        val hitBug = bugs.lastOrNull { bug ->
-                            bug.contains(modelX, modelY)
-                        }
+                            if (hitBug != null) {
+                                hits++
+                                score += hitBug.points
 
-                        if (hitBug != null) {
-                            hits++
-                            score += hitBug.points
+                                val replacement = createBug(
+                                    fieldWidth = fieldWidth,
+                                    fieldHeight = fieldHeight
+                                )
 
-                            val replacement = createBug(
-                                fieldWidth = fieldWidth,
-                                fieldHeight = fieldHeight
-                            )
-
-                            bugs = bugs.filterNot {
-                                it.id == hitBug.id
-                            } + replacement
-                        } else {
-                            misses++
-                            score -= MISS_PENALTY
+                                bugs = bugs.filterNot {
+                                    it.id == hitBug.id
+                                } + replacement
+                            } else {
+                                misses++
+                                score -= MISS_PENALTY
+                            }
                         }
                     }
-                }
-        ) {
-            val scale = minOf(size.width, size.height) / FIELD_SIZE
+            ) {
+                val scale = minOf(size.width, size.height) / FIELD_SIZE
 
-            drawRect(color = Color(0xFFE8F5E9))
+                drawRect(color = Color(0xFFE8F5E9))
 
-            bugs.forEach { bug ->
-                val painter = bugPainters.getValue(bug.imageRes)
+                bugs.forEach { bug ->
+                    val painter = bugPainters.getValue(bug.imageRes)
 
-                val imageSize = bug.size * scale
-                val left = (bug.x - bug.radius) * scale
-                val top = (bug.y - bug.radius) * scale
+                    val imageSize = bug.size * scale
+                    val left = (bug.x - bug.radius) * scale
+                    val top = (bug.y - bug.radius) * scale
 
-                translate(left = left, top = top) {
-                    with(painter) {
-                        draw(
-                            size = Size(
-                                width = imageSize,
-                                height = imageSize
+                    translate(left = left, top = top) {
+                        with(painter) {
+                            draw(
+                                size = Size(
+                                    width = imageSize,
+                                    height = imageSize
+                                )
                             )
-                        )
+                        }
                     }
                 }
             }
         }
-    }
+    )
 }
