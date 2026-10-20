@@ -182,7 +182,6 @@ fun PlayerCard(player: Player) {
                     ФИО: ${player.fullName}
                     Пол: ${player.gender.title}
                     Курс: ${player.course}
-                    Сложность: ${player.difficulty}
                     Дата рождения: ${player.birthDate.format(dateFormat)}
                     Знак зодиака: ${player.zodiac.title}
                 """.trimIndent()

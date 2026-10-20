@@ -16,12 +16,11 @@ import kotlin.coroutines.cancellation.CancellationException
 @Composable
 fun RegistrationScreen(
     config: RegistrationConfig,
-    settings: GameSettings,
-    onRegister: suspend (Player, GameSettings) -> Player
+    onRegister: suspend (Player) -> Player
 ) {
     val coroutineScope = rememberCoroutineScope()
 
-    var isSaving by rememberSaveable {
+    var isSaving by remember {
         mutableStateOf(false)
     }
 
@@ -76,14 +75,14 @@ fun RegistrationScreen(
                 submitted = true
 
                 if (form.isValid && !isSaving && player == null) {
-                    val newPlayer = form.toPlayer(settings.difficulty)
+                    val newPlayer = form.toPlayer()
 
                     isSaving = true
                     errorMessage = null
 
                     coroutineScope.launch {
                         try {
-                            player = onRegister(newPlayer, settings)
+                            player = onRegister(newPlayer)
                         } catch (e: CancellationException) {
                             throw e
                         } catch (e: Exception) {
@@ -95,10 +94,36 @@ fun RegistrationScreen(
                     }
                 }
             },
+            enabled = !isSaving && player == null,
             modifier = Modifier.fillMaxWidth()
         ) {
-            Text("Зарегистрироваться")
+            Text(
+                when {
+                    isSaving -> "Сохраняем..."
+                    player != null -> "Пользователь зарегистрирован"
+                    else -> "Зарегистрироваться"
+                }
+            )
+        }
+        errorMessage?.let { message ->
+            Text(
+                text = message,
+                color = MaterialTheme.colorScheme.error
+            )
         }
         player?.let { PlayerCard(it) }
+        if (player != null) {
+            OutlinedButton(
+                onClick = {
+                    player = null
+                    form = RegistrationState.initial(config)
+                    submitted = false
+                    errorMessage = null
+                },
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Text("Зарегистрировать другого")
+            }
+        }
     }
 }

@@ -12,10 +12,4 @@ data class PlayerEntity(
     val gender: String,
     val course: Int,
     val birthDate: String,
-
-    val difficulty: String,
-    val speed: Int,
-    val maxCockroaches: Int,
-    val bonusInterval: Int,
-    val roundDuration: Int
 )

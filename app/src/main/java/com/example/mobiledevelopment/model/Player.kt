@@ -11,7 +11,6 @@ data class Player(
     val fullName: String,
     val gender: Gender,
     val course: Int,
-    val difficulty: Difficulty,
     val birthDate: LocalDate,
     val id: Long = 0,
 ) : Serializable {

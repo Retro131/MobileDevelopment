@@ -1,6 +1,5 @@
 package com.example.mobiledevelopment.data
 
-import com.example.mobiledevelopment.model.GameSettings
 import com.example.mobiledevelopment.model.Player
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
@@ -17,19 +16,15 @@ class PlayerRepository(
         }
     }
 
-    suspend fun register(
-        player: Player,
-        settings: GameSettings
-    ): Player {
+    suspend fun register(player: Player): Player {
         require(player.fullName.isNotBlank()) {
             "Введите ФИО"
         }
-
         require(player.id == 0L) {
             "Этот пользователь уже зарегистрирован"
         }
 
-        val entity = player.toEntity(settings)
+        val entity = player.toEntity()
         val id = playerDao.insert(entity)
 
         return entity.copy(id = id).toPlayer()
@@ -37,16 +32,13 @@ class PlayerRepository(
 
     suspend fun getById(
         id: Long
-    ): Pair<Player, GameSettings>? {
+    ): Player? {
         val entity = playerDao.getById(id) ?: return null
 
-        return entity.toPlayer() to entity.toSettings()
+        return entity.toPlayer()
     }
 
-    suspend fun update(
-        player: Player,
-        settings: GameSettings
-    ) {
+    suspend fun update(player: Player) {
         require(player.id > 0L) {
             "Пользователь ещё не зарегистрирован"
         }
@@ -55,7 +47,7 @@ class PlayerRepository(
             "Введите ФИО"
         }
 
-        val entity = player.toEntity(settings)
+        val entity = player.toEntity()
         val updatedRows = playerDao.update(entity)
 
         check(updatedRows == 1) {

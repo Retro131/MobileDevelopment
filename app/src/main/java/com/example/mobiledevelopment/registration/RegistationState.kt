@@ -1,6 +1,5 @@
 package com.example.mobiledevelopment.registration
 
-import com.example.mobiledevelopment.model.Difficulty
 import com.example.mobiledevelopment.model.Gender
 import com.example.mobiledevelopment.model.Player
 import java.io.Serializable
@@ -14,13 +13,12 @@ data class RegistrationState(
 ) : Serializable {
     val isValid: Boolean
         get() = fullName.isNotBlank()
-    fun toPlayer(difficulty: Difficulty): Player {
+    fun toPlayer(): Player {
         require(isValid)
         return Player(
             fullName = fullName.trim(),
             gender = gender,
             course = course,
-            difficulty = difficulty,
             birthDate = birthDate
         )
     }

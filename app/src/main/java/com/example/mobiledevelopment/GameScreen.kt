@@ -26,6 +26,7 @@ import androidx.compose.ui.unit.sp
 import com.example.mobiledevelopment.data.GameDatabase
 import com.example.mobiledevelopment.data.PlayerRepository
 import com.example.mobiledevelopment.game.BugGameScreen
+import com.example.mobiledevelopment.model.Player
 import kotlinx.coroutines.launch
 
 private enum class GameTab(val titleRes: Int) {
@@ -37,6 +38,10 @@ private enum class GameTab(val titleRes: Int) {
 
 @Composable
 fun GameScreen() {
+    var selectedPlayer by rememberSaveable {
+        mutableStateOf<Player?>(null)
+    }
+
     val appContext = LocalContext.current.applicationContext
 
     val repository = remember(appContext) {
@@ -71,13 +76,27 @@ fun GameScreen() {
             .safeDrawingPadding()
     ) {
         Button(
-            onClick = { showGame = true },
+            onClick = {
+                if (selectedPlayer != null) {
+                    showGame = true
+                }
+            },
+            enabled = selectedPlayer != null,
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(horizontal = 16.dp, vertical = 8.dp)
         ) {
             Text("Играть")
         }
+        Text(
+            text = selectedPlayer?.let {
+                "Выбран игрок: ${it.fullName} · ID: ${it.id}"
+            } ?: "Зарегистрируй или выбери пользователя",
+            modifier = Modifier.padding(
+                horizontal = 16.dp,
+                vertical = 8.dp
+            )
+        )
         PrimaryTabRow(selectedTabIndex = pagerState.currentPage) {
             GameTab.entries.forEachIndexed { index, tab ->
                 Tab(
@@ -111,12 +130,14 @@ fun GameScreen() {
             stateHolder.SaveableStateProvider(tab.name) {
                 when (tab) {
                     GameTab.PLAYER -> RegistrationScreen(
-                        config,
-                        settings,
-                        onRegister = { player, gameSettings ->
-                            repository.register(player, gameSettings)
+                        config = config,
+                        onRegister = { candidate ->
+                            val savedPlayer = repository.register(candidate)
+                            selectedPlayer = savedPlayer
+                            savedPlayer
                         }
                     )
+
                     GameTab.RULES -> RulesScreen()
                     GameTab.AUTHORS -> AuthorsScreen()
                     GameTab.SETTINGS -> GameSettingsScreen(
