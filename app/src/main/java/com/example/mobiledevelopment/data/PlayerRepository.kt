@@ -64,7 +64,7 @@ class PlayerRepository(
 
         val guest = entity.copy(
             id = id,
-            fullName = "Гость($id)"
+            fullName = "Гость$id"
         )
 
         playerDao.update(guest)

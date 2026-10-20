@@ -15,6 +15,7 @@ import androidx.compose.ui.unit.sp
 
 enum class GameTab(val titleRes: Int) {
     PLAYER(R.string.tab_player),
+    RECORDS(R.string.tab_records),
     RULES(R.string.tab_rules),
     AUTHORS(R.string.tab_authors),
     SETTINGS(R.string.tab_settings)

@@ -1,6 +1,7 @@
 package com.example.mobiledevelopment.data
 
 import com.example.mobiledevelopment.model.GameSettings
+import kotlinx.coroutines.flow.Flow
 
 class GameResultRepository(
     private val gameResultDao: GameResultDao
@@ -26,5 +27,13 @@ class GameResultRepository(
         )
 
         return gameResultDao.insert(result)
+    }
+
+    fun observeResults(): Flow<List<GameResultRow>> {
+        return gameResultDao.observeResults()
+    }
+
+    fun observeBestResults(): Flow<List<GameResultRow>> {
+        return gameResultDao.observeBestResults()
     }
 }
