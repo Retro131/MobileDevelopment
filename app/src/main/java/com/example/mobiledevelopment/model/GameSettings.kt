@@ -12,7 +12,7 @@ enum class Difficulty {
 data class GameSettings(
     val difficulty: Difficulty = Difficulty.Easy,
     val speed: Int = 1,
-    val maxCockroaches: Int = 10,
+    val maxCockroaches: Int = 25,
     val bonusInterval: Int = 10,
     val roundDuration: Int = 60
 ) : Serializable {
