@@ -1,4 +1,5 @@
 package com.example.mobiledevelopment.registration
+
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -9,9 +10,25 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.example.mobiledevelopment.model.GameSettings
 import com.example.mobiledevelopment.model.Player
+import kotlinx.coroutines.launch
+import kotlin.coroutines.cancellation.CancellationException
 
 @Composable
-fun RegistrationScreen(config: RegistrationConfig, settings: GameSettings) {
+fun RegistrationScreen(
+    config: RegistrationConfig,
+    settings: GameSettings,
+    onRegister: suspend (Player, GameSettings) -> Player
+) {
+    val coroutineScope = rememberCoroutineScope()
+
+    var isSaving by rememberSaveable {
+        mutableStateOf(false)
+    }
+
+    var errorMessage by rememberSaveable {
+        mutableStateOf<String?>(null)
+    }
+
     var form by rememberSaveable {
         mutableStateOf(RegistrationState.initial(config))
     }
@@ -57,7 +74,26 @@ fun RegistrationScreen(config: RegistrationConfig, settings: GameSettings) {
         Button(
             onClick = {
                 submitted = true
-                player = if (form.isValid) form.toPlayer(settings.difficulty) else null
+
+                if (form.isValid && !isSaving && player == null) {
+                    val newPlayer = form.toPlayer(settings.difficulty)
+
+                    isSaving = true
+                    errorMessage = null
+
+                    coroutineScope.launch {
+                        try {
+                            player = onRegister(newPlayer, settings)
+                        } catch (e: CancellationException) {
+                            throw e
+                        } catch (e: Exception) {
+                            errorMessage = e.message
+                                ?: "Ошибка регистрации"
+                        } finally {
+                            isSaving = false
+                        }
+                    }
+                }
             },
             modifier = Modifier.fillMaxWidth()
         ) {

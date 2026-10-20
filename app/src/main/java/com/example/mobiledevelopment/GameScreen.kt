@@ -19,9 +19,12 @@ import com.example.mobiledevelopment.registration.RegistrationScreen
 import com.example.mobiledevelopment.rules.RulesScreen
 import com.example.mobiledevelopment.settings.GameSettingsScreen
 import androidx.compose.material3.Icon
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.mobiledevelopment.data.GameDatabase
+import com.example.mobiledevelopment.data.PlayerRepository
 import com.example.mobiledevelopment.game.BugGameScreen
 import kotlinx.coroutines.launch
 
@@ -34,6 +37,14 @@ private enum class GameTab(val titleRes: Int) {
 
 @Composable
 fun GameScreen() {
+    val appContext = LocalContext.current.applicationContext
+
+    val repository = remember(appContext) {
+        PlayerRepository(
+            GameDatabase.getInstance(appContext).playerDao()
+        )
+    }
+
     var selectedTab by rememberSaveable {
         mutableStateOf(GameTab.PLAYER)
     }
@@ -99,7 +110,13 @@ fun GameScreen() {
             val tab = GameTab.entries[page]
             stateHolder.SaveableStateProvider(tab.name) {
                 when (tab) {
-                    GameTab.PLAYER -> RegistrationScreen(config, settings)
+                    GameTab.PLAYER -> RegistrationScreen(
+                        config,
+                        settings,
+                        onRegister = { player, gameSettings ->
+                            repository.register(player, gameSettings)
+                        }
+                    )
                     GameTab.RULES -> RulesScreen()
                     GameTab.AUTHORS -> AuthorsScreen()
                     GameTab.SETTINGS -> GameSettingsScreen(
