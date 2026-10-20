@@ -3,44 +3,30 @@ package com.example.mobiledevelopment
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
-import androidx.compose.material3.Button
-import androidx.compose.material3.PrimaryTabRow
-import androidx.compose.material3.Tab
-import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.saveable.rememberSaveableStateHolder
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.res.stringResource
-import com.example.mobiledevelopment.authors.AuthorsScreen
-import com.example.mobiledevelopment.model.GameSettings
-import com.example.mobiledevelopment.registration.RegistrationConfig
-import com.example.mobiledevelopment.registration.RegistrationScreen
-import com.example.mobiledevelopment.rules.RulesScreen
-import com.example.mobiledevelopment.settings.GameSettingsScreen
-import androidx.compose.material3.Icon
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.mobiledevelopment.authors.AuthorsScreen
 import com.example.mobiledevelopment.data.GameDatabase
 import com.example.mobiledevelopment.data.PlayerRepository
 import com.example.mobiledevelopment.game.BugGameScreen
-import com.example.mobiledevelopment.model.Player
+import com.example.mobiledevelopment.model.GameSettings
+import com.example.mobiledevelopment.player.PlayerScreen
+import com.example.mobiledevelopment.rules.RulesScreen
+import com.example.mobiledevelopment.session.SessionViewModel
+import com.example.mobiledevelopment.settings.GameSettingsScreen
 import kotlinx.coroutines.launch
-
-private enum class GameTab(val titleRes: Int) {
-    PLAYER(R.string.tab_player),
-    RULES(R.string.tab_rules),
-    AUTHORS(R.string.tab_authors),
-    SETTINGS(R.string.tab_settings)
-}
 
 @Composable
 fun GameScreen() {
-    var selectedPlayer by rememberSaveable {
-        mutableStateOf<Player?>(null)
-    }
+    val session: SessionViewModel = viewModel()
+
+    val currentPlayer by
+    session.currentPlayer.collectAsStateWithLifecycle()
 
     val appContext = LocalContext.current.applicationContext
 
@@ -50,96 +36,68 @@ fun GameScreen() {
         )
     }
 
-    var selectedTab by rememberSaveable {
-        mutableStateOf(GameTab.PLAYER)
-    }
     var settings by rememberSaveable {
         mutableStateOf(GameSettings())
     }
+
     var showGame by rememberSaveable {
         mutableStateOf(false)
     }
-    val pagerState = rememberPagerState(pageCount = { GameTab.entries.size })
-    val coroutineScope = rememberCoroutineScope()
+
+    val pagerState = rememberPagerState(
+        pageCount = { GameTab.entries.size }
+    )
+
+    val scope = rememberCoroutineScope()
     val stateHolder = rememberSaveableStateHolder()
-    val config = remember { RegistrationConfig() }
-    if (showGame) {
+
+    LaunchedEffect(currentPlayer?.id) {
+        if (currentPlayer == null) {
+            showGame = false
+        }
+    }
+
+    if (showGame && currentPlayer != null) {
         BugGameScreen(
             settings = settings,
             onExit = { showGame = false }
         )
         return
     }
+
     Column(
         modifier = Modifier
             .fillMaxSize()
             .safeDrawingPadding()
     ) {
-        Button(
-            onClick = {
-                if (selectedPlayer != null) {
-                    showGame = true
-                }
-            },
-            enabled = selectedPlayer != null,
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 16.dp, vertical = 8.dp)
-        ) {
-            Text("Играть")
-        }
-        Text(
-            text = selectedPlayer?.let {
-                "Выбран игрок: ${it.fullName} · ID: ${it.id}"
-            } ?: "Зарегистрируй или выбери пользователя",
-            modifier = Modifier.padding(
-                horizontal = 16.dp,
-                vertical = 8.dp
-            )
-        )
-        PrimaryTabRow(selectedTabIndex = pagerState.currentPage) {
-            GameTab.entries.forEachIndexed { index, tab ->
-                Tab(
-                    selected = pagerState.currentPage == index,
-                    onClick = { coroutineScope.launch { pagerState.animateScrollToPage(index) } },
-                    modifier = Modifier.height(48.dp)
-                ) {
-                    if (tab == GameTab.SETTINGS) {
-                        Icon(
-                            painter = painterResource(R.drawable.ic_settings),
-                            contentDescription = stringResource(tab.titleRes),
-                            modifier = Modifier.size(24.dp)
-                        )
-                    } else {
-                        Text(
-                            text = stringResource(tab.titleRes),
-                            fontSize = 13.sp,
-                            maxLines = 1
-                        )
-                    }
+        GameTabs(
+            selectedIndex = pagerState.currentPage,
+            onTabSelected = { index ->
+                scope.launch {
+                    pagerState.animateScrollToPage(index)
                 }
             }
-        }
+        )
+
         HorizontalPager(
             state = pagerState,
             key = { index -> GameTab.entries[index].name },
             modifier = Modifier.weight(1f)
-        )
-        { page ->
+        ) { page ->
             val tab = GameTab.entries[page]
+
             stateHolder.SaveableStateProvider(tab.name) {
                 when (tab) {
-                    GameTab.PLAYER -> RegistrationScreen(
-                        config = config,
-                        onRegister = { candidate ->
-                            val savedPlayer = repository.register(candidate)
-                            selectedPlayer = savedPlayer
-                            savedPlayer
-                        }
+                    GameTab.PLAYER -> PlayerScreen(
+                        session = session,
+                        repository = repository,
+                        onStartGame = { showGame = true }
                     )
 
                     GameTab.RULES -> RulesScreen()
+
                     GameTab.AUTHORS -> AuthorsScreen()
+
                     GameTab.SETTINGS -> GameSettingsScreen(
                         settings = settings,
                         onSettingsChange = { settings = it }
