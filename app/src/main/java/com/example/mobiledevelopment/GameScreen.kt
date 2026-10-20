@@ -12,10 +12,12 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.mobiledevelopment.authors.AuthorsScreen
 import com.example.mobiledevelopment.data.GameDatabase
+import com.example.mobiledevelopment.data.GameResultRepository
 import com.example.mobiledevelopment.data.PlayerRepository
 import com.example.mobiledevelopment.game.BugGameScreen
 import com.example.mobiledevelopment.model.GameSettings
 import com.example.mobiledevelopment.player.PlayerScreen
+import com.example.mobiledevelopment.records.RecordsScreen
 import com.example.mobiledevelopment.rules.RulesScreen
 import com.example.mobiledevelopment.session.SessionViewModel
 import com.example.mobiledevelopment.settings.GameSettingsScreen
@@ -33,6 +35,12 @@ fun GameScreen() {
     val repository = remember(appContext) {
         PlayerRepository(
             GameDatabase.getInstance(appContext).playerDao()
+        )
+    }
+
+    val resultRepository = remember(appContext) {
+        GameResultRepository(
+            GameDatabase.getInstance(appContext).gameResultDao()
         )
     }
 
@@ -57,9 +65,19 @@ fun GameScreen() {
         }
     }
 
-    if (showGame && currentPlayer != null) {
+    val player = currentPlayer
+
+    if (showGame && player != null) {
         BugGameScreen(
+            playerId = player.id,
             settings = settings,
+            onSaveResult = { playerId, score, roundSettings ->
+                resultRepository.saveResult(
+                    playerId = playerId,
+                    score = score,
+                    settings = roundSettings
+                )
+            },
             onExit = { showGame = false }
         )
         return
@@ -92,6 +110,10 @@ fun GameScreen() {
                         session = session,
                         repository = repository,
                         onStartGame = { showGame = true }
+                    )
+
+                    GameTab.RECORDS -> RecordsScreen(
+                        repository = resultRepository
                     )
 
                     GameTab.RULES -> RulesScreen()

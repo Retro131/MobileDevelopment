@@ -44,14 +44,20 @@ private const val MISS_PENALTY = 1
 
 @Composable
 fun BugGameScreen(
+    playerId: Long,
     settings: GameSettings,
+    onSaveResult: suspend (Long, Int, GameSettings) -> Unit,
     onExit: () -> Unit
 ) {
-    var roundNumber by remember { mutableIntStateOf(0) }
+    var roundNumber by remember {
+        mutableIntStateOf(0)
+    }
 
     BackHandler(onBack = onExit)
 
     key(roundNumber) {
+        val roundPlayerId = remember { playerId }
+
         val roundSettings = remember {
             settings.copy(
                 speed = settings.speed.coerceIn(
@@ -70,7 +76,9 @@ fun BugGameScreen(
         }
 
         BugRound(
+            playerId = roundPlayerId,
             settings = roundSettings,
+            onSaveResult = onSaveResult,
             onReplay = { roundNumber++ },
             onExit = onExit
         )
@@ -79,7 +87,9 @@ fun BugGameScreen(
 
 @Composable
 private fun BugRound(
+    playerId: Long,
     settings: GameSettings,
+    onSaveResult: suspend (Long, Int, GameSettings) -> Unit,
     onReplay: () -> Unit,
     onExit: () -> Unit
 ) {
@@ -192,10 +202,13 @@ private fun BugRound(
     }
 
     if (finished) {
-        RoundResultScreen(
+        RoundCompletionScreen(
+            playerId = playerId,
+            settings = settings,
             score = score,
             hits = hits,
             misses = misses,
+            onSaveResult = onSaveResult,
             onReplay = onReplay,
             onExit = onExit
         )
