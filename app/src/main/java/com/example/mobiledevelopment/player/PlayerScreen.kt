@@ -17,6 +17,12 @@ import com.example.mobiledevelopment.session.SessionViewModel
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.launch
 
+private enum class PlayerEntryPage {
+    CHOICE,
+    PROFILES,
+    REGISTRATION
+}
+
 @Composable
 fun PlayerScreen(
     session: SessionViewModel,
@@ -26,8 +32,16 @@ fun PlayerScreen(
     val currentPlayer by
     session.currentPlayer.collectAsStateWithLifecycle()
 
-    var showRegistration by rememberSaveable {
-        mutableStateOf(false)
+    val playersFlow = remember(repository) {
+        repository.observeRegisteredPlayers()
+    }
+
+    val players by playersFlow.collectAsStateWithLifecycle(
+        initialValue = emptyList()
+    )
+
+    var entryPage by rememberSaveable {
+        mutableStateOf(PlayerEntryPage.CHOICE)
     }
 
     var isCreatingGuest by remember {
@@ -50,7 +64,7 @@ fun PlayerScreen(
             )
         )
 
-        showRegistration = false
+        entryPage = PlayerEntryPage.CHOICE
         guestError = null
     }
 
@@ -61,7 +75,7 @@ fun PlayerScreen(
             player = player,
             onStartGame = onStartGame,
             onLogout = {
-                showRegistration = false
+                entryPage = PlayerEntryPage.CHOICE
                 guestError = null
                 session.clearPlayer()
             }
@@ -69,62 +83,85 @@ fun PlayerScreen(
         return
     }
 
-    if (showRegistration) {
-        Column(modifier = Modifier.fillMaxSize()) {
-            Button(
-                onClick = { showRegistration = false },
-                modifier = Modifier.padding(16.dp)
-            ) {
-                Text("Назад")
-            }
+    when (entryPage) {
+        PlayerEntryPage.CHOICE -> {
+            LoginChoice(
+                isCreatingGuest = isCreatingGuest,
+                error = guestError,
+                onChoosePlayer = {
+                    guestError = null
+                    entryPage = PlayerEntryPage.PROFILES
+                },
+                onGuestLogin = {
+                    if (!isCreatingGuest) {
+                        isCreatingGuest = true
+                        guestError = null
 
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .weight(1f)
-            ) {
-                RegistrationScreen(
-                    config = config,
-                    onRegister = { candidate ->
-                        val savedPlayer = repository.register(candidate)
-
-                        selectPlayer(savedPlayer)
-
-                        savedPlayer
+                        scope.launch {
+                            try {
+                                val guest = repository.createGuest()
+                                selectPlayer(guest)
+                            } catch (e: CancellationException) {
+                                throw e
+                            } catch (e: Exception) {
+                                guestError = "Не удалось создать гостя"
+                            } finally {
+                                isCreatingGuest = false
+                            }
+                        }
                     }
-                )
-            }
+                }
+            )
         }
-        return
-    }
 
-    LoginChoice(
-        isCreatingGuest = isCreatingGuest,
-        error = guestError,
-        onRegister = {
-            guestError = null
-            showRegistration = true
-        },
-        onGuestLogin = {
-            if (!isCreatingGuest) {
-                isCreatingGuest = true
-                guestError = null
+        PlayerEntryPage.PROFILES -> {
+            PlayerSelectionScreen(
+                players = players,
+                onSelectPlayer = { selectedPlayer ->
+                    selectPlayer(selectedPlayer)
+                },
+                onRegister = {
+                    entryPage = PlayerEntryPage.REGISTRATION
+                },
+                onBack = {
+                    entryPage = PlayerEntryPage.CHOICE
+                }
+            )
+        }
 
-                scope.launch {
-                    try {
-                        val guest = repository.createGuest()
-                        selectPlayer(guest)
-                    } catch (e: CancellationException) {
-                        throw e
-                    } catch (e: Exception) {
-                        guestError = "Не удалось создать гостя"
-                    } finally {
-                        isCreatingGuest = false
-                    }
+        PlayerEntryPage.REGISTRATION -> {
+            Column(
+                modifier = Modifier.fillMaxSize()
+            ) {
+                Button(
+                    onClick = {
+                        entryPage = PlayerEntryPage.PROFILES
+                    },
+                    modifier = Modifier.padding(16.dp)
+                ) {
+                    Text("Назад")
+                }
+
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .weight(1f)
+                ) {
+                    RegistrationScreen(
+                        config = config,
+                        onRegister = { candidate ->
+                            val savedPlayer =
+                                repository.register(candidate)
+
+                            selectPlayer(savedPlayer)
+
+                            savedPlayer
+                        }
+                    )
                 }
             }
         }
-    )
+    }
 }
 
 @Composable
@@ -161,7 +198,7 @@ private fun PlayerMenu(
 private fun LoginChoice(
     isCreatingGuest: Boolean,
     error: String?,
-    onRegister: () -> Unit,
+    onChoosePlayer: () -> Unit,
     onGuestLogin: () -> Unit
 ) {
     Column(
@@ -171,7 +208,7 @@ private fun LoginChoice(
         verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
         Button(
-            onClick = onRegister,
+            onClick = onChoosePlayer,
             enabled = !isCreatingGuest,
             modifier = Modifier.fillMaxWidth()
         ) {

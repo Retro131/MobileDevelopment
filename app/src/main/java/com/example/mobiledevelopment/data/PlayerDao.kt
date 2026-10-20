@@ -20,4 +20,7 @@ interface PlayerDao {
 
     @Update
     suspend fun update(player: PlayerEntity): Int
+
+    @Query("SELECT * FROM players WHERE isGuest = 0 ORDER BY fullName, id")
+    fun observeRegisteredPlayers(): Flow<List<PlayerEntity>>
 }

@@ -71,4 +71,10 @@ class PlayerRepository(
 
         return guest.toPlayer()
     }
+
+    fun observeRegisteredPlayers(): Flow<List<Player>> {
+        return playerDao.observeRegisteredPlayers().map { entities ->
+            entities.map { it.toPlayer() }
+        }
+    }
 }
