@@ -54,4 +54,21 @@ class PlayerRepository(
             "Пользователь не найден в базе"
         }
     }
+    suspend fun createGuest(): Player {
+        val entity = PlayerEntity(
+            fullName = "Гость",
+            isGuest = true
+        )
+
+        val id = playerDao.insert(entity)
+
+        val guest = entity.copy(
+            id = id,
+            fullName = "Гость($id)"
+        )
+
+        playerDao.update(guest)
+
+        return guest.toPlayer()
+    }
 }

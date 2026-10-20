@@ -26,6 +26,7 @@ import kotlin.math.roundToInt
 import androidx.core.graphics.createBitmap
 
 private val dateFormat = DateTimeFormatter.ofPattern("dd.MM.yyyy")
+
 @Composable
 fun GenderPicker(value: Gender, onChange: (Gender) -> Unit) {
     Column {
@@ -55,6 +56,7 @@ fun GenderPicker(value: Gender, onChange: (Gender) -> Unit) {
         }
     }
 }
+
 @Composable
 fun CoursePicker(
     value: Int,
@@ -82,6 +84,7 @@ fun CoursePicker(
         }
     }
 }
+
 @Composable
 fun DifficultyPicker(
     value: Int,
@@ -98,6 +101,7 @@ fun DifficultyPicker(
         )
     }
 }
+
 @Composable
 fun BirthDatePicker(
     value: LocalDate,
@@ -139,6 +143,7 @@ fun BirthDatePicker(
         )
     }
 }
+
 fun LocalDate.toCalendarMillis(): Long {
     return Calendar.getInstance().apply {
         clear()
@@ -149,6 +154,7 @@ fun LocalDate.toCalendarMillis(): Long {
         )
     }.timeInMillis
 }
+
 @Composable
 fun ZodiacImage(zodiac: Zodiac, modifier: Modifier = Modifier) {
     val bitmap = remember(zodiac) {
@@ -169,6 +175,7 @@ fun ZodiacImage(zodiac: Zodiac, modifier: Modifier = Modifier) {
         modifier = modifier
     )
 }
+
 @Composable
 fun PlayerCard(player: Player) {
     Card(modifier = Modifier.fillMaxWidth()) {
@@ -180,18 +187,20 @@ fun PlayerCard(player: Player) {
             Text(
                 """
                     ФИО: ${player.fullName}
-                    Пол: ${player.gender.title}
-                    Курс: ${player.course}
-                    Дата рождения: ${player.birthDate.format(dateFormat)}
-                    Знак зодиака: ${player.zodiac.title}
+                    Пол: ${player.gender?.title ?: "Не указан"}
+                    Курс: ${player.course ?: "Не указан"}
+                    Дата рождения: ${player.birthDate?.format(dateFormat) ?: "Не указана"}
+                    Знак зодиака: ${player.zodiac?.title ?: "Не указан"}
                 """.trimIndent()
             )
-            ZodiacImage(
-                zodiac = player.zodiac,
-                modifier = Modifier
-                    .size(96.dp)
-                    .align(Alignment.CenterHorizontally)
-            )
+            player.zodiac?.let { zodiac ->
+                ZodiacImage(
+                    zodiac = zodiac,
+                    modifier = Modifier
+                        .size(96.dp)
+                        .align(Alignment.CenterHorizontally)
+                )
+            }
         }
     }
 }

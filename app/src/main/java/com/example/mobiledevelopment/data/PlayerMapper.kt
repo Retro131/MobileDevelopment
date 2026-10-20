@@ -8,9 +8,10 @@ fun Player.toEntity(): PlayerEntity {
     return PlayerEntity(
         id = id,
         fullName = fullName.trim(),
-        gender = gender.name,
+        gender = gender?.name,
         course = course,
-        birthDate = birthDate.toString(),
+        birthDate = birthDate?.toString(),
+        isGuest = isGuest
     )
 }
 
@@ -18,8 +19,9 @@ fun PlayerEntity.toPlayer(): Player {
     return Player(
         id = id,
         fullName = fullName,
-        gender = Gender.valueOf(gender),
+        gender = gender?.let { Gender.valueOf(it) },
         course = course,
-        birthDate = LocalDate.parse(birthDate),
+        birthDate = birthDate?.let { LocalDate.parse(it) },
+        isGuest = isGuest
     )
 }
