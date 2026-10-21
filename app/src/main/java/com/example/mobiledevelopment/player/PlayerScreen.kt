@@ -10,6 +10,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.mobiledevelopment.data.PlayerRepository
 import com.example.mobiledevelopment.model.Player
+import com.example.mobiledevelopment.registration.PlayerCard
 import com.example.mobiledevelopment.registration.RegistrationConfig
 import com.example.mobiledevelopment.registration.RegistrationScreen
 import com.example.mobiledevelopment.session.SessionPlayer
@@ -71,8 +72,19 @@ fun PlayerScreen(
     val player = currentPlayer
 
     if (player != null) {
+        val profile = if (player.isGuest) {
+            Player(
+                id = player.id,
+                fullName = player.name,
+                isGuest = true
+            )
+        } else {
+            players.firstOrNull { it.id == player.id }
+        }
+
         PlayerMenu(
             player = player,
+            profile = profile,
             onStartGame = onStartGame,
             onLogout = {
                 entryPage = PlayerEntryPage.CHOICE
@@ -167,8 +179,9 @@ fun PlayerScreen(
 @Composable
 private fun PlayerMenu(
     player: SessionPlayer,
+    profile: Player?,
     onStartGame: () -> Unit,
-    onLogout: () -> Unit
+    onLogout: () -> Unit,
 ) {
     Column(
         modifier = Modifier
@@ -176,7 +189,11 @@ private fun PlayerMenu(
             .padding(16.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
-        Text("Текущий игрок: ${player.name}")
+        if (profile != null) {
+            PlayerCard(player = profile)
+        } else {
+            Text("Текущий игрок: ${player.name}")
+        }
 
         Button(
             onClick = onStartGame,
