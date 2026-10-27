@@ -65,4 +65,5 @@ dependencies {
     ksp("androidx.room:room-compiler:$roomVersion")
     implementation("com.squareup.retrofit2:retrofit:3.0.0")
     implementation("com.squareup.retrofit2:converter-scalars:3.0.0")
+    implementation("androidx.work:work-runtime-ktx:2.12.0")
 }
