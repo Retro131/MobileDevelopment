@@ -1,6 +1,7 @@
 package com.example.mobiledevelopment.game
 
 import GameLayout
+import android.media.MediaPlayer
 import android.os.SystemClock
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.Canvas
@@ -15,9 +16,11 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.key
+import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -31,13 +34,19 @@ import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.drawscope.translate
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.onSizeChanged
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import com.example.mobiledevelopment.R
+import com.example.mobiledevelopment.game.bonuses.AttractionBonus
+import com.example.mobiledevelopment.game.bonuses.Bonus
+import com.example.mobiledevelopment.game.bonuses.GravityBonus
+import com.example.mobiledevelopment.game.sensors.rememberGravityTilt
 import com.example.mobiledevelopment.model.GameSettings
 import com.example.mobiledevelopment.model.GameSettingsLimits
 import kotlinx.coroutines.isActive
+import kotlin.random.Random
 
 private const val FIELD_SIZE = 1000f
 private const val MISS_PENALTY = 1
@@ -111,12 +120,39 @@ private fun BugRound(
 
     val durationMillis = settings.roundDuration * 1000L
 
+
+    var fieldBonus by remember {
+        mutableStateOf<Bonus?>(null)
+    }
+
+    var activeBonus by remember {
+        mutableStateOf<Bonus?>(null)
+    }
+
+    var bonusRemaining by remember {
+        mutableFloatStateOf(0f)
+    }
+
+    var timeUntilBonus by remember {
+        mutableFloatStateOf(settings.bonusInterval.toFloat())
+    }
+
+    val tilt by rememberGravityTilt(
+        enabled = !finished && activeBonus is GravityBonus
+    )
+
     val bugPainters = bugs
         .map { it.imageRes }
         .distinct()
         .associateWith { imageRes ->
             painterResource(imageRes)
         }
+
+    val bonusToDraw = fieldBonus
+
+    val bonusPainter = bonusToDraw?.let { bonus ->
+        painterResource(bonus.imageRes)
+    }
 
     fun createBug(
         fieldWidth: Float,
@@ -191,13 +227,70 @@ private fun BugRound(
 
             previousFrame = currentFrame
 
+            timeUntilBonus -= deltaSeconds
+
+            if (timeUntilBonus <= 0f) {
+                val radius = 45f
+
+                val bonusX = radius +
+                        Random.nextFloat() * (fieldWidth - radius * 2f)
+
+                val bonusY = radius +
+                        Random.nextFloat() * (fieldHeight - radius * 2f)
+
+                fieldBonus = if (Random.nextBoolean()) {
+                    GravityBonus(
+                        x = bonusX,
+                        y = bonusY,
+                        radius = radius,
+                    )
+                } else {
+                    AttractionBonus(
+                        x = bonusX,
+                        y = bonusY,
+                        radius = radius
+                    )
+                }
+
+                timeUntilBonus += settings.bonusInterval
+            }
+
             bugs = bugs.map { bug ->
                 bug.move(
                     deltaSeconds = deltaSeconds,
                     fieldWidth = fieldWidth,
-                    fieldHeight = fieldHeight
+                    fieldHeight = fieldHeight,
+                    bonusMovement = activeBonus?.movement,
+                    tilt = tilt
                 )
             }
+
+            if (activeBonus != null) {
+                bonusRemaining =
+                    (bonusRemaining - deltaSeconds).coerceAtLeast(0f)
+
+                if (bonusRemaining == 0f) {
+                    activeBonus = null
+                }
+            }
+        }
+    }
+
+    val appContext = LocalContext.current.applicationContext
+
+    DisposableEffect(activeBonus, finished, appContext) {
+        val player = if (!finished) {
+            activeBonus?.soundRes?.let { soundRes ->
+                MediaPlayer.create(appContext, soundRes)
+            }
+        } else {
+            null
+        }
+
+        player?.start()
+
+        onDispose {
+            player?.release()
         }
     }
 
@@ -269,6 +362,18 @@ private fun BugRound(
                                 return@detectTapGestures
                             }
 
+                            val selectedBonus = fieldBonus
+
+                            if (selectedBonus != null &&
+                                selectedBonus.contains(modelX, modelY)
+                            ) {
+                                activeBonus = selectedBonus
+                                bonusRemaining = selectedBonus.durationSeconds
+                                fieldBonus = null
+
+                                return@detectTapGestures
+                            }
+
                             val hitBug = bugs.lastOrNull { bug ->
                                 bug.contains(modelX, modelY)
                             }
@@ -305,6 +410,23 @@ private fun BugRound(
 
                     translate(left = left, top = top) {
                         with(painter) {
+                            draw(
+                                size = Size(
+                                    width = imageSize,
+                                    height = imageSize
+                                )
+                            )
+                        }
+                    }
+                }
+                if (bonusToDraw != null && bonusPainter != null) {
+                    val imageSize = bonusToDraw.radius * 2f * scale
+
+                    val left = (bonusToDraw.x - bonusToDraw.radius) * scale
+                    val top = (bonusToDraw.y - bonusToDraw.radius) * scale
+
+                    translate(left = left, top = top) {
+                        with(bonusPainter) {
                             draw(
                                 size = Size(
                                     width = imageSize,
