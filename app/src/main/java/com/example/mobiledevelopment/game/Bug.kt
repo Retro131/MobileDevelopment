@@ -1,7 +1,9 @@
 package com.example.mobiledevelopment.game
 
 import androidx.annotation.DrawableRes
+import androidx.compose.ui.geometry.Offset
 import com.example.mobiledevelopment.game.Movements.MovementBehavior
+import com.example.mobiledevelopment.game.bonuses.movements.BonusMovement
 import kotlin.math.PI
 import kotlin.math.abs
 import kotlin.math.cos
@@ -40,7 +42,9 @@ abstract class Bug {
     fun move(
         deltaSeconds: Float,
         fieldWidth: Float,
-        fieldHeight: Float
+        fieldHeight: Float,
+        bonusMovement: BonusMovement? = null,
+        tilt: Offset = Offset.Zero
     ): Bug {
         if (!deltaSeconds.isFinite() || deltaSeconds <= 0f) {
             return this
@@ -56,13 +60,33 @@ abstract class Bug {
             return this
         }
 
+        if (bonusMovement != null) {
+            val nextPosition = bonusMovement.nextPosition(
+                bug = this,
+                deltaSeconds = deltaSeconds,
+                tilt = tilt
+            )
+
+            if (!nextPosition.x.isFinite() || !nextPosition.y.isFinite()) {
+                return this
+            }
+
+            return copyMotion(
+                x = nextPosition.x.coerceIn(minX, maxX),
+                y = nextPosition.y.coerceIn(minY, maxY),
+                velocityX = velocityX,
+                velocityY = velocityY,
+                timeUntilTurn = timeUntilTurn,
+                turnNumber = turnNumber
+            )
+        }
+
         var nextVelocityX = velocityX
         var nextVelocityY = velocityY
 
         var nextTimeUntilTurn = timeUntilTurn - deltaSeconds
         var nextTurnNumber = turnNumber
 
-        // Меняем направление, когда пришло время.
         if (nextTimeUntilTurn <= 0f) {
             val angleDegrees = movement.getTurnAngle(nextTurnNumber)
             val angleRadians = angleDegrees * PI.toFloat() / 180f
