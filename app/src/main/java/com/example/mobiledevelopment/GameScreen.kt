@@ -118,8 +118,9 @@ fun GameScreen() {
 
                     GameTab.RULES -> RulesScreen()
 
-                    GameTab.AUTHORS -> AuthorsScreen()
-
+//                    GameTab.AUTHORS -> AuthorsScreen()
+                    GameTab.AUTHORS ->
+                        com.example.mobiledevelopment.gold.GoldPriceScreen()
                     GameTab.SETTINGS -> GameSettingsScreen(
                         settings = settings,
                         onSettingsChange = { settings = it }
