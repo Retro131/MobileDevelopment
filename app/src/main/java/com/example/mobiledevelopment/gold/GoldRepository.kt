@@ -3,24 +3,37 @@ package com.example.mobiledevelopment.gold
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.time.LocalDate
+import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 
 class GoldRepository(
+    private val storage: GoldQuoteStorage,
     private val api: CbrApi = CbrClient.api
 ) {
 
-    suspend fun loadLatest(): GoldQuote {
-        val today = LocalDate.now()
+    suspend fun getCached(): GoldQuote? {
+        return storage.read()
+    }
 
-        val formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy")
+    suspend fun loadLatest(): GoldQuote {
+        val today = LocalDate.now(
+            ZoneId.of("Europe/Moscow")
+        )
+
+        val formatter =
+            DateTimeFormatter.ofPattern("dd/MM/yyyy")
 
         val xml = api.getMetalPrices(
-            dateFrom = today.minusDays(5).format(formatter),
+            dateFrom = today.minusDays(30).format(formatter),
             dateTo = today.format(formatter)
         )
 
-        return withContext(Dispatchers.Default) {
+        val quote = withContext(Dispatchers.Default) {
             GoldXmlParser.parseLatest(xml)
         }
+
+        storage.save(quote)
+
+        return quote
     }
 }
