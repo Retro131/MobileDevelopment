@@ -189,7 +189,7 @@ private fun PlayerMenu(
             .padding(16.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
-        if (profile != null) {
+        if (profile != null && !player.isGuest) {
             PlayerCard(player = profile)
         } else {
             Text("Текущий игрок: ${player.name}")
