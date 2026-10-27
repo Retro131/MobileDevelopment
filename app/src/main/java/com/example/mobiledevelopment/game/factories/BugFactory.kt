@@ -16,6 +16,47 @@ object BugFactory {
         RARE
     }
 
+    fun createGold(
+        id: Int,
+        fieldWidth: Float,
+        fieldHeight: Float,
+        speedMultiplier: Int,
+        points: Int
+    ): GoldBug {
+        val size = 140f
+        val radius = size / 2f
+
+        require(fieldWidth >= size && fieldHeight >= size) {
+            "Поле слишком маленькое для золотого таракана"
+        }
+
+        require(speedMultiplier > 0) {
+            "Множитель скорости должен быть положительным"
+        }
+
+        require(points > 0) {
+            "Количество очков должно быть положительным"
+        }
+
+        val x = radius + Random.nextFloat() *
+                (fieldWidth - size)
+
+        val y = radius + Random.nextFloat() *
+                (fieldHeight - size)
+
+        val angle = Random.nextFloat() * 2f * PI.toFloat()
+        val speed = 200f * speedMultiplier
+
+        return GoldBug(
+            id = id,
+            x = x,
+            y = y,
+            velocityX = cos(angle) * speed,
+            velocityY = sin(angle) * speed,
+            points = points
+        )
+    }
+
     fun create(
         id: Int,
         fieldWidth: Float,
