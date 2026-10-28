@@ -3,6 +3,10 @@ package com.example.mobiledevelopment.game
 import com.example.mobiledevelopment.game.Movements.CircularMovement
 import com.example.mobiledevelopment.game.Movements.RandomMovement
 import com.example.mobiledevelopment.game.Movements.ZigzagMovement
+import com.example.mobiledevelopment.game.bonuses.AttractionBonus
+import com.example.mobiledevelopment.game.bonuses.Bonus
+import com.example.mobiledevelopment.game.bonuses.DioBonus
+import com.example.mobiledevelopment.game.bonuses.GravityBonus
 import kotlin.math.PI
 import kotlin.math.cos
 import kotlin.math.sin
@@ -55,6 +59,43 @@ object BugFactory {
             velocityY = sin(angle) * speed,
             points = points
         )
+    }
+
+    fun createBonus(
+        fieldWidth: Float,
+        fieldHeight: Float,
+    ) : Bonus {
+        val radius = 45f
+
+        val bonusX = radius +
+                Random.nextFloat() * (fieldWidth - radius * 2f)
+
+        val bonusY = radius +
+                Random.nextFloat() * (fieldHeight - radius * 2f)
+
+        val randomValue = Random.nextInt(3)
+
+        val fieldBonus = if (randomValue == 0) {
+            GravityBonus(
+                x = bonusX,
+                y = bonusY,
+                radius = radius,
+            )
+        } else if (randomValue == 1) {
+            AttractionBonus(
+                x = bonusX,
+                y = bonusY,
+                radius = radius
+            )
+        } else {
+            DioBonus(
+                x = bonusX,
+                y = bonusY,
+                radius = radius
+            )
+        }
+
+        return fieldBonus
     }
 
     fun create(

@@ -7,17 +7,17 @@ import com.example.mobiledevelopment.game.bonuses.movements.AttractionMovement
 class AttractionBonus(
     x: Float,
     y: Float,
-    radius: Float = 45f,
+    radius: Float = 60f,
     override val durationSeconds: Float = 5f,
     @get:RawRes
-    override val soundRes: Int? = R.raw.the_world,
-    speed: Float = 500f
+    override val soundRes: Int? = R.raw.hand,
+    speed: Float = 1500f
 ) : Bonus(
     x = x,
     y = y,
     radius = radius
 ) {
-    override val imageRes: Int = R.drawable.attraction
+    override val imageRes: Int = R.drawable.enigma
 
     override val movement = AttractionMovement(
         targetX = x,
