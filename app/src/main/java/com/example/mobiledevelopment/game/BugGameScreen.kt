@@ -33,6 +33,7 @@ import androidx.compose.ui.unit.dp
 import com.example.mobiledevelopment.R
 import com.example.mobiledevelopment.game.bonuses.AttractionBonus
 import com.example.mobiledevelopment.game.bonuses.Bonus
+import com.example.mobiledevelopment.game.bonuses.DioBonus
 import com.example.mobiledevelopment.game.bonuses.GravityBonus
 import com.example.mobiledevelopment.game.sensors.rememberGravityTilt
 import com.example.mobiledevelopment.gold.GoldPointsCalculator
@@ -297,27 +298,7 @@ private fun BugRound(
             timeUntilBonus -= deltaSeconds
 
             if (timeUntilBonus <= 0f) {
-                val radius = 45f
-
-                val bonusX = radius +
-                        Random.nextFloat() * (fieldWidth - radius * 2f)
-
-                val bonusY = radius +
-                        Random.nextFloat() * (fieldHeight - radius * 2f)
-
-                fieldBonus = if (Random.nextBoolean()) {
-                    GravityBonus(
-                        x = bonusX,
-                        y = bonusY,
-                        radius = radius,
-                    )
-                } else {
-                    AttractionBonus(
-                        x = bonusX,
-                        y = bonusY,
-                        radius = radius
-                    )
-                }
+                fieldBonus = BugFactory.createBonus(fieldWidth, fieldHeight)
 
                 timeUntilBonus += settings.bonusInterval
             }
@@ -342,8 +323,6 @@ private fun BugRound(
             }
         }
     }
-
-    val appContext = LocalContext.current.applicationContext
 
     DisposableEffect(activeBonus, finished, appContext) {
         val player = if (!finished) {
