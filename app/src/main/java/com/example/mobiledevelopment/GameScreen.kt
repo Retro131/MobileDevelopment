@@ -67,14 +67,9 @@ fun GameScreen() {
         BugGameScreen(
             playerId = player.id,
             settings = settings,
-            onSaveResult = { playerId, score, roundSettings ->
-                resultRepository.saveResult(
-                    playerId = playerId,
-                    score = score,
-                    settings = roundSettings
-                )
-            },
-            onExit = { showGame = false }
+            onExit = {
+                showGame = false
+            }
         )
         return
     }

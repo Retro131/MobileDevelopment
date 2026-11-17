@@ -10,7 +10,7 @@ import androidx.room.RoomDatabase
         PlayerEntity::class,
         GameResultEntity::class
     ],
-    version = 2,
+    version = 1,
     exportSchema = true
 )
 abstract class GameDatabase : RoomDatabase() {

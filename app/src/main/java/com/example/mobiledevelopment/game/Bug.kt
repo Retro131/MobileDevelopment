@@ -64,7 +64,7 @@ abstract class Bug {
             val nextPosition = bonusMovement.nextPosition(
                 bug = this,
                 deltaSeconds = deltaSeconds,
-                tilt = tilt
+                    tilt = tilt
             )
 
             if (!nextPosition.x.isFinite() || !nextPosition.y.isFinite()) {
