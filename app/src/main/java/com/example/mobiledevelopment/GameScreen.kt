@@ -1,17 +1,21 @@
 package com.example.mobiledevelopment
 
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.safeDrawingPadding
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
-import androidx.compose.runtime.*
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.saveable.rememberSaveableStateHolder
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.mobiledevelopment.authors.AuthorsScreen
-import com.example.mobiledevelopment.data.GameDatabase
 import com.example.mobiledevelopment.data.GameResultRepository
 import com.example.mobiledevelopment.data.PlayerRepository
 import com.example.mobiledevelopment.game.BugGameScreen
@@ -22,27 +26,19 @@ import com.example.mobiledevelopment.rules.RulesScreen
 import com.example.mobiledevelopment.session.SessionViewModel
 import com.example.mobiledevelopment.settings.GameSettingsScreen
 import kotlinx.coroutines.launch
+import org.koin.androidx.compose.koinViewModel
+import org.koin.compose.koinInject
 
 @Composable
 fun GameScreen() {
-    val session: SessionViewModel = viewModel()
+    val session: SessionViewModel = koinViewModel()
 
     val currentPlayer by
     session.currentPlayer.collectAsStateWithLifecycle()
 
-    val appContext = LocalContext.current.applicationContext
+    val repository: PlayerRepository = koinInject()
 
-    val repository = remember(appContext) {
-        PlayerRepository(
-            GameDatabase.getInstance(appContext).playerDao()
-        )
-    }
-
-    val resultRepository = remember(appContext) {
-        GameResultRepository(
-            GameDatabase.getInstance(appContext).gameResultDao()
-        )
-    }
+    val resultRepository: GameResultRepository = koinInject()
 
     var settings by rememberSaveable {
         mutableStateOf(GameSettings())
