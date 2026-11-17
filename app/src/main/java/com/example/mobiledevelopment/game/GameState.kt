@@ -22,5 +22,9 @@ data class GameState(
 
     val fieldBonus: Bonus? = null,
     val activeBonus: Bonus? = null,
-    val bonusRemaining: Float = 0f
+    val bonusRemaining: Float = 0f,
+
+    val isSaving: Boolean = false,
+    val resultSaved: Boolean = false,
+    val saveError: String? = null
 )
